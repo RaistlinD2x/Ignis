@@ -8,6 +8,7 @@ Ensure that your AWS CLI is configured correctly. You can set it up by running:
 
   ```bash
   aws configure
+  ```
 
 You will be prompted to enter your **AWS Access Key**, **Secret Key**, and **Region**.
 
@@ -17,6 +18,7 @@ Before deploying, bootstrap the CDK to set up the necessary resources for the en
 
   ```bash
   cdk bootstrap
+  ```
 
 ### **3. Deploy the CDK stacks**:
 
