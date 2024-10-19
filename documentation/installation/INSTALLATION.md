@@ -11,3 +11,11 @@ This guide will walk you through the process of setting up the **Ignis** full-st
 - [Next Steps](deploy-infrastructure.md#next-steps)
 
 Each section contains a detailed explanation to help you with the setup process. Click the links above to jump to each section.
+
+## Local Development
+
+For setting up and running the frontend and backend locally, refer to the following guides:
+
+- [Frontend Setup](frontend-setup.md)
+- [Backend Setup](backend-setup.md)
+
