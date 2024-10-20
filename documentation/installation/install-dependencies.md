@@ -29,7 +29,9 @@ This will install all the necessary Python libraries for the Flask application.
 Finally, install the dependencies for the CDK project:
 
   ```bash
+  npm install -g aws-cdk
   cd ../cdk
+  cdk init app --language typescript
   npm install
   ```
 
