@@ -7,10 +7,10 @@ export class NetworkStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // Create a VPC with two public and private subnets
+    // Define a VPC with public and private subnets
     this.vpc = new ec2.Vpc(this, 'Vpc', {
-      maxAzs: 2,  // We'll use two Availability Zones
-      natGateways: 1,  // NAT gateway for internet access for private subnets
+      maxAzs: 2,
+      natGateways: 1,
       subnetConfiguration: [
         {
           cidrMask: 24,

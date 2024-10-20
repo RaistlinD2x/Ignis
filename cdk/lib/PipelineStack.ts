@@ -2,7 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as codepipeline from 'aws-cdk-lib/aws-codepipeline';
 import * as codepipeline_actions from 'aws-cdk-lib/aws-codepipeline-actions';
 import * as codebuild from 'aws-cdk-lib/aws-codebuild';
-import * as ssm from 'aws-cdk-lib/aws-ssm'
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { SecretValue } from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
 
@@ -10,8 +10,8 @@ export class PipelineStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-     // Create a role for the CodePipeline
-     const pipelineRole = new iam.Role(this, 'PipelineRole', {
+    // Create a role for the CodePipeline
+    const pipelineRole = new iam.Role(this, 'PipelineRole', {
       assumedBy: new iam.ServicePrincipal('codepipeline.amazonaws.com'),
     });
 
@@ -33,6 +33,8 @@ export class PipelineStack extends cdk.Stack {
     });
 
     const sourceOutput = new codepipeline.Artifact();
+    const buildOutput = new codepipeline.Artifact(); // Define the build output artifact
+
     try {
       // Retrieve GitHub username and repository from SSM Parameter Store
       const githubUsername = ssm.StringParameter.valueForStringParameter(this, '/github/username');
@@ -108,8 +110,40 @@ export class PipelineStack extends cdk.Stack {
           actionName: 'CDK_Build',
           project: buildProject,
           input: sourceOutput,
+          outputs: [buildOutput],  // Define the output artifact
         }),
       ],
     });
+
+    // Add Deployment Stages
+    this.addDeploymentStages(pipeline, buildOutput);
+  }
+
+  private addDeploymentStages(pipeline: codepipeline.Pipeline, buildOutput: codepipeline.Artifact) {
+    const environments = ['dev', 'test', 'prod'];
+
+    for (const env of environments) {
+      pipeline.addStage({
+        stageName: `Deploy${env.toUpperCase()}`,
+        actions: [
+          new codepipeline_actions.CloudFormationCreateUpdateStackAction({
+            actionName: `Deploy${env.toUpperCase()}`,
+            stackName: `EKSStack-${env}`,
+            templatePath: buildOutput.atPath(`EKSStack-${env}.template.json`), // Reference build output here
+            adminPermissions: true,
+          }),
+        ],
+      });
+
+      // Add manual approval step for Test and Prod environments
+      if (env !== 'prod') {
+        pipeline.addStage({
+          stageName: `ApproveTo${env === 'dev' ? 'Test' : 'Prod'}`,
+          actions: [new codepipeline_actions.ManualApprovalAction({
+            actionName: `ApproveTo${env === 'dev' ? 'Test' : 'Prod'}`,
+          })],
+        });
+      }
+    }
   }
 }
