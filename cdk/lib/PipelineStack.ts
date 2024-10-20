@@ -74,6 +74,7 @@ export class PipelineStack extends cdk.Stack {
           install: {
             commands: [
               'npm install -g aws-cdk',
+              'cd cdk',
               'npm install',
             ],
           },
