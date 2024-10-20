@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import * as eks from 'aws-cdk-lib/aws-eks';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as kubectl from '@aws-cdk/lambda-layer-kubectl-v31'
 
 interface EKSStackProps extends cdk.StackProps {
     vpc: ec2.Vpc;  // Expect the VPC to be passed as a prop
@@ -15,9 +16,10 @@ export class EKSStack extends cdk.Stack {
     // Create the basic EKS cluster in the provided VPC
     this.cluster = new eks.Cluster(this, 'MyEKSCluster', {
       vpc: props!.vpc,  // Use the VPC from the NetworkStack
-      version: eks.KubernetesVersion.V1_31
+      version: eks.KubernetesVersion.V1_31,
+      kubectlLayer: new kubectl.KubectlV31Layer(this, 'KubectlLayer'),  // Add the kubectl layer
     });
-    
+
     // Optionally, we could deploy a basic workload (e.g., Nginx) for testing
     const nginxDeployment = this.cluster.addManifest('NginxDeployment', {
       apiVersion: 'apps/v1',

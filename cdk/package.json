@@ -20,6 +20,7 @@
     "typescript": "~5.6.2"
   },
   "dependencies": {
+    "@aws-cdk/lambda-layer-kubectl-v31": "^2.0.0",
     "aws-cdk-lib": "2.162.1",
     "constructs": "^10.0.0",
     "dotenv": "^16.4.5",

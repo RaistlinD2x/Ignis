@@ -33,6 +33,7 @@ Finally, install the dependencies for the CDK project:
   cd ../cdk
   cdk init app --language typescript
   npm install
+  npm install @aws-cdk/lambda-layer-kubectl-v31
   ```
 
 This will install all the necessary CDK modules and packages.
