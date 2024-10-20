@@ -2,10 +2,9 @@ import * as cdk from 'aws-cdk-lib';
 import * as codepipeline from 'aws-cdk-lib/aws-codepipeline';
 import * as codepipeline_actions from 'aws-cdk-lib/aws-codepipeline-actions';
 import * as codebuild from 'aws-cdk-lib/aws-codebuild';
-import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import * as ssm from 'aws-cdk-lib/aws-ssm'
 import { SecretValue } from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
-import * as dotenv from 'dotenv';
 
 export class PipelineStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
@@ -35,13 +34,9 @@ export class PipelineStack extends cdk.Stack {
 
     const sourceOutput = new codepipeline.Artifact();
     try {
-      dotenv.config();
-      const githubUsername = process.env.GITHUB_USERNAME!;
-      const githubRepository = process.env.GITHUB_REPOSITORY!;
-
-      if (!githubUsername || !githubRepository) {
-        throw new Error('GitHub username or repository name is missing. Please ensure they are set in the .env file.');
-      }
+      // Retrieve GitHub username and repository from SSM Parameter Store
+      const githubUsername = ssm.StringParameter.valueForStringParameter(this, '/github/username');
+      const githubRepository = ssm.StringParameter.valueForStringParameter(this, '/github/repository');
 
       // Source Stage - GitHub Repository
       pipeline.addStage({
