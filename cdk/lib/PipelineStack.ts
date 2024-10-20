@@ -66,7 +66,7 @@ export class PipelineStack extends cdk.Stack {
     // Build Stage - CodeBuild Project for CDK
     const buildProject = new codebuild.PipelineProject(this, 'CDKBuildProject', {
       environment: {
-        buildImage: codebuild.LinuxBuildImage.STANDARD_5_0, // AWS CodeBuild image with Node.js 14.x
+        buildImage: codebuild.LinuxBuildImage.STANDARD_7_0, // AWS CodeBuild image with Node.js 14.x
       },
       buildSpec: codebuild.BuildSpec.fromObject({
         version: '0.2',
