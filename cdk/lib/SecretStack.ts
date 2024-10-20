@@ -13,10 +13,13 @@ export class SecretStack extends cdk.Stack {
       const githubToken = process.env.GITHUB_OAUTH_TOKEN;
 
       if (githubToken) {
-        // Create the GitHub OAuth token secret in Secrets Manager
+        // Create the GitHub OAuth token secret in Secrets Manager using a secure format
         new secretsmanager.Secret(this, 'GitHubOAuthToken', {
           secretName: 'github-oauth-token',
-          secretStringValue: cdk.SecretValue.unsafePlainText(githubToken),
+          generateSecretString: {
+            secretStringTemplate: JSON.stringify({ GITHUB_OAUTH_TOKEN: githubToken }),
+            generateStringKey: 'GITHUB_OAUTH_TOKEN',
+          },
         });
 
         console.log('GitHub OAuth token loaded from .env and pushed to Secrets Manager.');
@@ -32,3 +35,4 @@ export class SecretStack extends cdk.Stack {
     }
   }
 }
+
