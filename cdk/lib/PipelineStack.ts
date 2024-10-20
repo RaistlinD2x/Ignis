@@ -75,8 +75,8 @@ export class PipelineStack extends cdk.Stack {
           },
           build: {
             commands: [
-              'cdk synth',
-              'cdk deploy --require-approval never --verbose',
+              'cdk synth --context BOOTSTRAP=false',
+              'cdk deploy --require-approval never --verbose --all',
             ],
           },
         },
