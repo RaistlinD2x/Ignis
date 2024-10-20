@@ -1,5 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 
@@ -13,13 +14,10 @@ export class SecretStack extends cdk.Stack {
       const githubToken = process.env.GITHUB_OAUTH_TOKEN;
 
       if (githubToken) {
-        // Create the GitHub OAuth token secret in Secrets Manager using a secure format
+        // Create the GitHub OAuth token secret in Secrets Manager
         new secretsmanager.Secret(this, 'GitHubOAuthToken', {
           secretName: 'github-oauth-token',
-          generateSecretString: {
-            secretStringTemplate: JSON.stringify({ GITHUB_OAUTH_TOKEN: githubToken }),
-            generateStringKey: 'GITHUB_OAUTH_TOKEN',
-          },
+          secretStringValue: cdk.SecretValue.unsafePlainText(githubToken),
         });
 
         console.log('GitHub OAuth token loaded from .env and pushed to Secrets Manager.');
@@ -35,4 +33,3 @@ export class SecretStack extends cdk.Stack {
     }
   }
 }
-

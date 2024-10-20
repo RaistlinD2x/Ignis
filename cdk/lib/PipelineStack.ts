@@ -3,6 +3,7 @@ import * as codepipeline from 'aws-cdk-lib/aws-codepipeline';
 import * as codepipeline_actions from 'aws-cdk-lib/aws-codepipeline-actions';
 import * as codebuild from 'aws-cdk-lib/aws-codebuild';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import { SecretValue } from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as dotenv from 'dotenv';
 
@@ -22,17 +23,10 @@ export class PipelineStack extends cdk.Stack {
         'codebuild:*',
         'cloudformation:*',
         'sts:AssumeRole',
+        'secretsmanager:GetSecretValue'
       ],
       resources: ['*'], // You can restrict this further as needed
     }));
-
-    // Retrieve the GitHub OAuth token from Secrets Manager (created by SecretStack)
-    const secret = secretsmanager.Secret.fromSecretNameV2(
-      this,
-      'GitHubToken',
-      'github-oauth-token'
-    );
-    const githubToken = secret.secretValue;
 
     // Define the CodePipeline
     const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
@@ -58,7 +52,7 @@ export class PipelineStack extends cdk.Stack {
             owner: githubUsername,    // GitHub username
             repo: githubRepository,   // GitHub repository
             branch: 'main',
-            oauthToken: githubToken,  // Token from Secrets Manager
+            oauthToken: SecretValue.secretsManager('github-oauth-token'),  // Token from Secrets Manager
             output: sourceOutput,
           }),
         ],
