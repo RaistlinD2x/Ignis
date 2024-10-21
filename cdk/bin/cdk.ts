@@ -5,7 +5,13 @@ import { SecretStack } from '../lib/SecretStack';
 import { NetworkStack } from '../lib/NetworkStack';
 import { EKSStack } from '../lib/EKSStack';
 import * as fs from 'fs';
-import { ALBStack } from '../lib/ALBStack';
+import * as yaml from 'js-yaml'
+import * as path from 'path';
+
+// TODO: move this to a helper function
+const configPath = path.resolve(__dirname, 'environments.yml');
+const config: any = yaml.load(fs.readFileSync(configPath, 'utf8'));
+const configEnvironments = config.environments
 
 const app = new cdk.App();
 
@@ -20,15 +26,8 @@ if (isBootstrapping) {
   console.log('Skipping SecretStack as it is not needed.');
 }
 
-// Define environments with namespace
-const environments = [
-  { envName: 'dev', account: '315730708373', region: 'us-east-1' },
-  { envName: 'test', account: '315730708373', region: 'us-east-1' },
-  { envName: 'prod', account: '315730708373', region: 'us-east-1' }
-];
-
 // Loop through each environment and create stacks
-for (const env of environments) {
+for (const env of configEnvironments) {
   const envName = env.envName;
 
   // Create a network stack for each environment
@@ -39,7 +38,9 @@ for (const env of environments) {
   // Create an EKS Stack for each environment
   new EKSStack(app, `EKSStack-${envName}`, {
     vpc: networkStack.vpc,
+    clusterStage: env.envName,
     env: { account: env.account, region: env.region }
+
   });
 // This is change
 }
