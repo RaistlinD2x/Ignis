@@ -2,9 +2,9 @@ environments:
     - envName: dev
       account: "315730708373"
       region: "us-east-1"
-    - envName: test
-      account: "315730708373"
-      region: "us-east-1"
-    - envName: prod
-      account: "315730708373"
-      region: "us-east-1"
+    # - envName: test                     #### Turning off test/prod to reduce cost while developing ####
+    #   account: "315730708373"
+    #   region: "us-east-1"
+    # - envName: prod
+    #   account: "315730708373"
+    #   region: "us-east-1"
