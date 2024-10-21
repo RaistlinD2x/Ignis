@@ -9,7 +9,7 @@ import * as yaml from 'js-yaml'
 import * as path from 'path';
 
 // TODO: move this to a helper function
-const configPath = path.resolve(__dirname, 'config.yaml');
+const configPath = path.resolve(__dirname, '..', 'config.yaml');
 console.log(configPath)
 const config: any = yaml.load(fs.readFileSync(configPath, 'utf8'));
 const configEnvironments = config.environments
