@@ -5,6 +5,7 @@ import { SecretStack } from '../lib/SecretStack';
 import { NetworkStack } from '../lib/NetworkStack';
 import { EKSStack } from '../lib/EKSStack';
 import * as fs from 'fs';
+import { ALBStack } from '../lib/ALBStack';
 
 const app = new cdk.App();
 
@@ -40,7 +41,9 @@ for (const env of environments) {
     vpc: networkStack.vpc,
     env: { account: env.account, region: env.region }
   });
+// This is change
 }
 
 // Deploy the pipeline globally, no need for namespace here
 new PipelineStack(app, 'PipelineStack', {});
+
