@@ -1,0 +1,10 @@
+environments:
+    - envName: dev
+      account: "123456789012"  #### Add your account number here ####
+      region: "us-east-1"
+    # - envName: test                     #### Turning off test/prod to reduce cost while developing ####
+    #   account: "123456789012"
+    #   region: "us-east-1"
+    # - envName: prod
+    #   account: "123456789012"
+    #   region: "us-east-1"
