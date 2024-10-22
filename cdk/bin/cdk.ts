@@ -4,9 +4,11 @@ import { PipelineStack } from '../lib/PipelineStack';
 import { SecretStack } from '../lib/SecretStack';
 import { NetworkStack } from '../lib/NetworkStack';
 import { EKSStack } from '../lib/EKSStack';
+import { ECRStack } from '../lib/ECRStack';
 import * as fs from 'fs';
 import * as yaml from 'js-yaml'
 import * as path from 'path';
+import * as eks from 'aws-cdk-lib/aws-eks'
 
 // TODO: move this to a helper function
 const configPath = path.resolve(__dirname, '..', 'config.yaml');
@@ -27,25 +29,39 @@ if (isBootstrapping) {
   console.log('Skipping SecretStack as it is not needed.');
 }
 
+const ecrStack = new ECRStack(app, 'ECRStack', {})
+
+// map to capture EKS Cluster names
+const eksClusters: { [envName: string]: eks.Cluster} = {};
+
 // Loop through each environment and create stacks
 for (const env of configEnvironments) {
   const envName = env.envName;
 
   // Create a network stack for each environment
   const networkStack = new NetworkStack(app, `NetworkStack-${envName}`, {
-    env: { account: env.account, region: env.region }
+    env: { account: env.account, region: env.region },
+    envName: envName
   });
 
   // Create an EKS Stack for each environment
-  new EKSStack(app, `EKSStack-${envName}`, {
+  const eksCluster = new EKSStack(app, `EKSStack-${envName}`, {
     vpc: networkStack.vpc,
     clusterStage: env.envName,
-    env: { account: env.account, region: env.region }
-
+    env: { account: env.account, region: env.region },
+    ecrRepo: ecrStack.repository
   });
-// This is change
+
+
+  eksClusters[envName] = eksCluster.cluster
 }
 
 // Deploy the pipeline globally, no need for namespace here
-new PipelineStack(app, 'PipelineStack', {});
+new PipelineStack(app, 'PipelineStack', {
+  configEnvironments: configEnvironments,
+  ecrRepo: ecrStack.repository,
+  eksClusters: eksClusters
+});
+
+
 

@@ -1,0 +1,24 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo "Installing Helm"
+      - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+      - echo "Configuring kubectl"
+      - aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_DEFAULT_REGION
+  build:
+    commands:
+      - echo "Running Helm deployment"
+      - helm upgrade --install my-frontend ./helm/frontend-chart \
+        --set image.repository=$REPO_URI \
+        --set image.tag=$IMAGE_TAG \
+        --set service.type=LoadBalancer \
+        --namespace $NAMESPACE
+artifacts:
+  files:
+    - '**/*'
+env:
+  variables:
+    CLUSTER_NAME: 'my-eks-cluster'  # Replace this dynamically via CDK
+    NAMESPACE: 'default'

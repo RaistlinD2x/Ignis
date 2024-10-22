@@ -1,0 +1,4 @@
+apiVersion: v2
+name: frontend-chart
+description: A Helm chart for React frontend
+version: 1.0.0
