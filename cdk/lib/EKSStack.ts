@@ -21,7 +21,7 @@ export class EKSStack extends cdk.Stack {
       vpc: props.vpc,  // Use the VPC from the NetworkStack
       version: eks.KubernetesVersion.V1_31,
       defaultCapacity: 0,  // Basic capacity for the cluster
-      clusterName: `MyEKSCluster-${props.clusterStage}`,
+      clusterName: `MyEKSCluster-${props.clusterStage}`
     });
 
     // Add a managed node group with specified instance types
@@ -51,8 +51,7 @@ export class EKSStack extends cdk.Stack {
       },
     });
     
-    // Apply removal policy to the underlying CloudFormation resource (CfnCluster)
-    const clusterResource = this.cluster.node.defaultChild as eks.CfnCluster;
-    clusterResource.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
+    // Set removal policy to DESTROY
+    this.cluster.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
   }
 }
