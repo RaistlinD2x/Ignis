@@ -26,9 +26,8 @@ For a detailed reference of API endpoints and their usage, see the [API Referenc
 This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
 
 ## **Project Structure**
-
+```
 /project-root
-│
 ├── /frontend
 │   ├── /src
 │   │   ├── /components
@@ -74,14 +73,14 @@ This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENS
 │   │   │   ├── /networking
 │   │   │   ├── /eks
 │   │   │   ├── /iam
-│   │   │   └── /helm               # Infra Helm Charts (e.g., for Kubernetes or cluster-level resources)
+│   │   │   └── /helm  # Infra Helm Charts (e.g., for Kubernetes or cluster-level resources)
 │   │   ├── /buildspec
 │   │   │   ├── buildspec-cdk-infra.yaml
 │   │   │   ├── buildspec-helm-package.yaml
 │   │   └── /pipelines
 │   │       ├── frontend-pipeline.ts
 │   │       ├── backend-pipeline.ts
-│   │       ├── ai-ml-pipeline.ts    # Pipeline for deploying ML models via CDK, not Helm
+│   │       ├── ai-ml-pipeline.ts  # Pipeline for deploying ML models via CDK, not Helm
 │   │       └── infra-pipeline.ts
 │   ├── cdk.json
 │   └── tsconfig.json
@@ -101,8 +100,8 @@ This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENS
 │   │   ├── buildspec-modelB.yaml
 │   ├── /deployments
 │   │   ├── /sagemaker
-│   │   │   ├── /modelA-endpoint     # CDK-based SageMaker Endpoint
-│   │   │   └── /modelB-endpoint     # CDK-based SageMaker Endpoint
+│   │   │   ├── /modelA-endpoint  # CDK-based SageMaker Endpoint
+│   │   │   └── /modelB-endpoint  # CDK-based SageMaker Endpoint
 │   ├── Dockerfile
 │   └── README.md
 │
@@ -113,4 +112,4 @@ This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENS
     │   ├── ai-ml-architecture.md
     │   └── infra-architecture.md
     └── README.md
-
+```
