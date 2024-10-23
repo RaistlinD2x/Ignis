@@ -1,13 +1,21 @@
-# Dockerfile for the React frontend
-FROM node:14 as build
+# Base image
+FROM node:14
+
+# Set working directory
 WORKDIR /app
-COPY package*.json ./
+
+# Copy package.json and install dependencies
+COPY package.json ./
 RUN npm install
+
+# Copy all the source files
 COPY . .
+
+# Build the React app
 RUN npm run build
 
-# Stage 2 - production environment
-FROM nginx:alpine
-COPY --from=build /app/build /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# Expose the port the app runs on
+EXPOSE 3000
+
+# Start the app
+CMD ["npm", "start"]

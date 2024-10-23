@@ -47,7 +47,7 @@ for (const env of configEnvironments) {
   // Create an EKS Stack for each environment
   const eksCluster = new EKSStack(app, `EKSStack-${envName}`, {
     vpc: networkStack.vpc,
-    clusterStage: env.envName,
+    envName: env.envName,
     env: { account: env.account, region: env.region },
     ecrRepo: ecrStack.repository
   });

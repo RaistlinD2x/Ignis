@@ -88,7 +88,7 @@ export class PipelineStack extends cdk.Stack {
     buildOutput: codepipeline.Artifact,
     ecrRepo: ecr.Repository
   ) {
-    const buildSpecPath = path.join(__dirname, '../buildspec/buildspec-ecr-build.yaml');
+    const buildSpecPath = path.join(__dirname, '../buildspec/buildspec-frontend-build.yaml');
     
     const buildProject = new codebuild.PipelineProject(this, 'CDKBuildProject', {
       environment: {
@@ -160,7 +160,8 @@ export class PipelineStack extends cdk.Stack {
           REPO_URI: { value: ecrRepo.repositoryUri },
           IMAGE_TAG: { value: 'latest' },
           CLUSTER_NAME: { value: eksClusters[env.envName].clusterName }, // Dynamically reference the cluster per environment
-          NAMESPACE: { value: 'default' }, // Can vary by environment if needed
+          NAMESPACE: { value: `${env.envName}-namespace` }, // Can vary by environment if needed
+          NODE_ENV: { value: `${env.envName}`}
         },
       });
 

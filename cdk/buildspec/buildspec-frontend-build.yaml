@@ -4,6 +4,7 @@ phases:
   install:
     commands:
       - echo "Installing dependencies"
+      - cd ../../frontend # Navigate to the frontend directory
       - npm install
   pre_build:
     commands:
@@ -12,7 +13,7 @@ phases:
   build:
     commands:
       - echo "Building the Docker image"
-      - docker build -t $REPO_URI:$IMAGE_TAG .
+      - docker build -t $REPO_URI:$IMAGE_TAG ../../frontend # Specify the frontend directory for Docker build
   post_build:
     commands:
       - echo "Pushing the Docker image to ECR"
@@ -20,7 +21,4 @@ phases:
 artifacts:
   files:
     - '**/*'
-env:
-  variables:
-    REPO_URI: 'repo-URI' # dynamically loaded in the pipeline
-    IMAGE_TAG: 'latest'  # Can dynamically change based on pipeline or versioning
+

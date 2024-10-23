@@ -6,7 +6,7 @@ import path = require('path');
 
 interface EKSStackProps extends cdk.StackProps {
     vpc: ec2.Vpc;  // Expect the VPC to be passed as a prop
-    clusterStage: string // Pass in the env name
+    envName: string // Pass in the env name
     ecrRepo: ecr.Repository
 }
 
@@ -17,15 +17,15 @@ export class EKSStack extends cdk.Stack {
     super(scope, id, props);
 
     // Create the basic EKS cluster in the provided VPC
-    this.cluster = new eks.Cluster(this, `MyEKSCluster-${props.clusterStage}`, {
+    this.cluster = new eks.Cluster(this, `MyEKSCluster-${props.envName}`, {
       vpc: props.vpc,  // Use the VPC from the NetworkStack
       version: eks.KubernetesVersion.V1_31,
       defaultCapacity: 0,  // Basic capacity for the cluster
-      clusterName: `MyEKSCluster-${props.clusterStage}`
+      clusterName: `MyEKSCluster-${props.envName}`
     });
 
     // Add a managed node group with specified instance types
-    const autoScalingGroup = this.cluster.addAutoScalingGroupCapacity('NodeGroup', {
+    const autoScalingGroup = this.cluster.addAutoScalingGroupCapacity(`NodeGroup-${props.envName}`, {
       instanceType: new ec2.InstanceType('t3a.micro'),  // Set the instance type
       minCapacity: 1,  // Minimum number of instances
       maxCapacity: 1,  // Maximum number of instances
@@ -37,9 +37,10 @@ export class EKSStack extends cdk.Stack {
     });
 
     // Deploy Helm chart for the frontend using the ECR repository URL
-    this.cluster.addHelmChart('FrontendChart', {
+    this.cluster.addHelmChart(`FrontendChart-${props.envName}`, {
       chart: path.join(__dirname, '../helm/frontend-chart'),
-      release: 'frontend-release',
+      release: `frontend-release-${props.envName}`,
+      namespace: `${props.envName}-namespace`,
       values: {
         image: {
           repository: props.ecrRepo.repositoryUri,  // Pass ECR repo URI dynamically
