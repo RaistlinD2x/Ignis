@@ -52,6 +52,6 @@ export class EKSStack extends cdk.Stack {
     });
     
     // Set removal policy to DESTROY
-    this.cluster.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
+    // this.cluster.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY); // I guess this doesn't work on EKS clusters
   }
 }
