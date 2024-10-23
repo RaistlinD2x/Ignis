@@ -8,8 +8,10 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as eks from 'aws-cdk-lib/aws-eks';
 import * as path from 'path';
+import * as s3 from 'aws-cdk-lib/aws-s3'
 
 interface PipelineProps extends cdk.StackProps {
+  helmBucket: s3.Bucket
   ecrRepo: ecr.Repository;
   eksClusters: { [envName: string]: eks.Cluster }; // Map of clusters per environment
   configEnvironments: [{
@@ -22,6 +24,9 @@ interface PipelineProps extends cdk.StackProps {
 export class PipelineStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props: PipelineProps) {
     super(scope, id, props);
+
+    // get helm bucket name
+    const helmS3BucketName = props.helmBucket.bucketName
 
     // Create a role for the CodePipeline
     const pipelineRole = new iam.Role(this, 'PipelineRole', {
@@ -53,6 +58,9 @@ export class PipelineStack extends cdk.Stack {
     // Source Stage - GitHub Repository
     this.addSourceStage(pipeline, sourceOutput);
 
+    // Package Helm chart for frontend and upload to S3
+    this.addHelmPackagingStage(pipeline, sourceOutput, props.helmBucket);
+
     // Build Stage - Build & Push to ECR
     this.addBuildStage(pipeline, sourceOutput, buildOutput, props.ecrRepo);
 
@@ -80,6 +88,38 @@ export class PipelineStack extends cdk.Stack {
         }),
       ],
     });
+  }
+
+  private addHelmPackagingStage(
+    pipeline: codepipeline.Pipeline,
+    sourceOutput: codepipeline.Artifact,
+    helmBucket: s3.Bucket
+  ) {
+    const helmPackageBuildSpecPath = path.join(__dirname, '../buildspec/buildspec-helm-frontend-package.yaml');
+  
+    const helmPackageProject = new codebuild.PipelineProject(this, 'HelmPackageProject', {
+      environment: {
+        buildImage: codebuild.LinuxBuildImage.STANDARD_7_0,
+      },
+      buildSpec: codebuild.BuildSpec.fromSourceFilename(helmPackageBuildSpecPath),
+      environmentVariables: {
+        HELM_BUCKET_NAME: { value: helmBucket.bucketName },  // Pass the bucket name
+      },
+    });
+  
+    pipeline.addStage({
+      stageName: 'HelmPackageAndUpload',
+      actions: [
+        new codepipeline_actions.CodeBuildAction({
+          actionName: 'Helm_Package_And_Upload',
+          project: helmPackageProject,
+          input: sourceOutput,
+        }),
+      ],
+    });
+  
+    // Grant permissions to the build project to interact with the S3 bucket
+    helmBucket.grantPut(helmPackageProject);
   }
 
   private addBuildStage(

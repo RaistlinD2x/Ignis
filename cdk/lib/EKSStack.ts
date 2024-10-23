@@ -8,6 +8,7 @@ interface EKSStackProps extends cdk.StackProps {
     vpc: ec2.Vpc;  // Expect the VPC to be passed as a prop
     envName: string // Pass in the env name
     ecrRepo: ecr.Repository
+    helmChartS3Url: string // s3 url path to helm chart package
 }
 
 export class EKSStack extends cdk.Stack {
@@ -38,7 +39,7 @@ export class EKSStack extends cdk.Stack {
 
     // Deploy Helm chart for the frontend using the ECR repository URL
     this.cluster.addHelmChart(`FrontendChart-${props.envName}`, {
-      chart: path.join(__dirname, '../helm/frontend-chart'),
+      chart: props.helmChartS3Url,
       release: `frontend-release-${props.envName}`,
       namespace: `${props.envName}-namespace`,
       values: {

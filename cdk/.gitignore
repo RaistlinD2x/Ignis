@@ -3,6 +3,9 @@
 *.d.ts
 node_modules
 
+# keep parseConfig.js file
+!parseConfig.js
+
 # CDK asset staging directory
 .cdk.staging
 cdk.out

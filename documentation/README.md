@@ -24,3 +24,93 @@ For a detailed reference of API endpoints and their usage, see the [API Referenc
 
 ## **License**
 This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
+
+## **Project Structure**
+
+/project-root
+│
+├── /frontend
+│   ├── /src
+│   │   ├── /components
+│   │   ├── /pages
+│   │   └── /styles
+│   ├── /buildspec
+│   │   └── buildspec-frontend-build.yaml
+│   ├── /helm
+│   │   ├── /templates
+│   │   ├── Chart.yaml
+│   │   └── values.yaml
+│   ├── Dockerfile
+│   ├── package.json
+│   └── tsconfig.json
+│
+├── /backend
+│   ├── /services
+│   │   ├── /serviceA
+│   │   │   ├── /src
+│   │   │   ├── /tests
+│   │   │   ├── Dockerfile
+│   │   │   └── buildspec-serviceA.yaml
+│   │   ├── /serviceB
+│   │   │   ├── /src
+│   │   │   ├── /tests
+│   │   │   ├── Dockerfile
+│   │   │   └── buildspec-serviceB.yaml
+│   ├── /helm
+│   │   ├── /serviceA-chart
+│   │   │   ├── /templates
+│   │   │   ├── Chart.yaml
+│   │   │   └── values.yaml
+│   │   ├── /serviceB-chart
+│   │   │   ├── /templates
+│   │   │   ├── Chart.yaml
+│   │   │   └── values.yaml
+│   └── /common
+│       └── shared-libraries
+│
+├── /infra
+│   ├── /cdk
+│   │   ├── /lib
+│   │   │   ├── /networking
+│   │   │   ├── /eks
+│   │   │   ├── /iam
+│   │   │   └── /helm               # Infra Helm Charts (e.g., for Kubernetes or cluster-level resources)
+│   │   ├── /buildspec
+│   │   │   ├── buildspec-cdk-infra.yaml
+│   │   │   ├── buildspec-helm-package.yaml
+│   │   └── /pipelines
+│   │       ├── frontend-pipeline.ts
+│   │       ├── backend-pipeline.ts
+│   │       ├── ai-ml-pipeline.ts    # Pipeline for deploying ML models via CDK, not Helm
+│   │       └── infra-pipeline.ts
+│   ├── cdk.json
+│   └── tsconfig.json
+│
+├── /ai-ml
+│   ├── /models
+│   │   ├── /modelA
+│   │   │   ├── /src
+│   │   │   ├── /tests
+│   │   │   └── /config
+│   │   └── /modelB
+│   │       ├── /src
+│   │       ├── /tests
+│   │       └── /config
+│   ├── /buildspec
+│   │   ├── buildspec-modelA.yaml
+│   │   ├── buildspec-modelB.yaml
+│   ├── /deployments
+│   │   ├── /sagemaker
+│   │   │   ├── /modelA-endpoint     # CDK-based SageMaker Endpoint
+│   │   │   └── /modelB-endpoint     # CDK-based SageMaker Endpoint
+│   ├── Dockerfile
+│   └── README.md
+│
+└── /docs
+    ├── /architecture
+    │   ├── frontend-architecture.md
+    │   ├── backend-architecture.md
+    │   ├── ai-ml-architecture.md
+    │   └── infra-architecture.md
+    └── README.md
+

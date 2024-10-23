@@ -10,13 +10,13 @@ phases:
   build:
     commands:
       - echo "Running Helm deployment"
-      - helm upgrade --install my-frontend ../helm/frontend-chart \
+      - helm upgrade --install my-frontend s3://$HELM_BUCKET_NAME/frontend-chart-0.1.0.tgz \
         --set image.repository=$REPO_URI \
         --set image.tag=$IMAGE_TAG \
         --set service.type=LoadBalancer \
-        --set env.NODE_ENV=$NODE_ENV \
         --namespace $NAMESPACE
 artifacts:
   files:
-    - '**/*
+    - '**/*'
+
 

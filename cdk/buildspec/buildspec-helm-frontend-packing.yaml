@@ -1,0 +1,16 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo "Installing Helm"
+      - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+  build:
+    commands:
+      - echo "Packaging the Helm chart"
+      - helm package ../helm/frontend-chart  # Adjust path based on location of the buildspec file
+      - echo "Uploading the packaged chart to S3"
+      - aws s3 cp ./frontend-chart-*.tgz s3://$HELM_BUCKET_NAME/
+artifacts:
+  files:
+    - '**/*'
