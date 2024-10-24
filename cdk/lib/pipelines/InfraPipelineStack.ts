@@ -5,9 +5,10 @@ import * as codebuild from "aws-cdk-lib/aws-codebuild";
 import * as ssm from "aws-cdk-lib/aws-ssm";
 import { Role, ServicePrincipal, PolicyStatement } from "aws-cdk-lib/aws-iam";
 
+import * as path from 'path'
+
 interface InfraPipelineProps extends cdk.StackProps {
   stages: { stageName: string; account: string; region: string }[];
-  buildspecPath: string;
 }
 
 export class InfraPipelineStack extends cdk.Stack {
@@ -17,6 +18,9 @@ export class InfraPipelineStack extends cdk.Stack {
     // Get the account and region dynamically
     const accountId = this.account;
     const region = this.region;
+
+    // get base path for buildspecs
+    const buildspecBasePath = path.resolve(__dirname, '../..', 'buildspecs');
 
     // Define the pipeline IAM role
     const infraPipelineSSMRole = new Role(this, "InfraPipelineSSMRole", {
@@ -83,7 +87,7 @@ export class InfraPipelineStack extends cdk.Stack {
           actionName: "Build",
           project: new codebuild.PipelineProject(this, "MyBuildProject", {
             buildSpec: codebuild.BuildSpec.fromSourceFilename(
-              `${props.buildspecPath}/infra/buildspec-infra-cdk-deploy.yaml`
+              `${buildspecBasePath}/infra/buildspec-infra-cdk-deploy.yaml`
             ),
           }),
           input: sourceOutput,
