@@ -5,7 +5,7 @@ from example import process_example_data, create_new_example
 
 app = Flask(__name__)
 
-@app.route('/example/<int:example_id>', methods=['GET'])
+@app.route('/example-service/<int:example_id>', methods=['GET'])
 def get_example(example_id):
     """
     GET endpoint to fetch data for a given example_id.
@@ -16,7 +16,7 @@ def get_example(example_id):
     else:
         return jsonify({"error": "Example not found"}), 404
 
-@app.route('/example', methods=['POST'])
+@app.route('/example-service', methods=['POST'])
 def create_example():
     """
     POST endpoint to create a new example entry.
