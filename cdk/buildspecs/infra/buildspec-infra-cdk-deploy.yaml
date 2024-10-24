@@ -8,6 +8,5 @@ phases:
       - npm install
   build:
     commands:
-      - cd cdk
       - cdk synth
       - cdk deploy --all --require-approval never

@@ -6,8 +6,17 @@ import { stages } from '../scripts/util/stage-config-loader'; // Configuration f
 
 const app = new cdk.App();
 
+
+// Infra Stacks
+
 // Create AuthStack
 const authStack = new AuthStack(app, "AuthStack")
+
+
+/* ----------------------------------------------------------- */
+
+
+// Pipeline Stacks
 
 // Create the PipelineStack that will manage deployments to dev/test/prod
 new InfraPipelineStack(app, 'InfraPipelineStack', {
