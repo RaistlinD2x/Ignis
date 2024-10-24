@@ -20,7 +20,7 @@ export class InfraPipelineStack extends cdk.Stack {
     const region = this.region;
 
     // get base path for buildspecs
-    const buildspecBasePath = path.resolve(__dirname, '../..', 'buildspecs');
+    // const buildspecBasePath = path.resolve(__dirname, '../..', 'buildspecs');
 
     // Define the pipeline IAM role
     const infraPipelineSSMRole = new Role(this, "InfraPipelineSSMRole", {
@@ -86,9 +86,7 @@ export class InfraPipelineStack extends cdk.Stack {
         new codepipeline_actions.CodeBuildAction({
           actionName: "Build",
           project: new codebuild.PipelineProject(this, "MyBuildProject", {
-            buildSpec: codebuild.BuildSpec.fromSourceFilename(
-              `${buildspecBasePath}/infra/buildspec-infra-cdk-deploy.yaml`
-            ),
+            buildSpec: codebuild.BuildSpec.fromSourceFilename('cdk/buildspecs/infra/buildspec-infra-cdk-deploy.yaml'),
           }),
           input: sourceOutput,
           outputs: [buildOutput],
