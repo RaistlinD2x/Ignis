@@ -14,60 +14,43 @@ import { FrontendPipelineStack } from "../lib/pipelines/FrontendPipelineStack";
 import { BackendPipelineStack } from "../lib/pipelines/BackendPipelineStack";
 import { AIMLPipelineStack } from "../lib/pipelines/AIMLPipelineStack";
 
-// custom import
-import { stages } from "../scripts/util/stage-config-loader"; // Load stages from stages.yaml
-
 const app = new cdk.App();
 
-// Get the target environment (STAGE_NAME) from the environment variables
-const targetStage = process.env.STAGE_NAME || "DEV";
+const stage = app.node.tryGetContext("stage") || "DEV"
 
-// validate stage ENV variable is provided
-if (!targetStage) {
-  throw new Error("No environment (STAGE_NAME) provided");
+const env = {
+  account: process.env.CDK_DEFAULT_ACCOUNT,
+  region: process.env.CDK_DEFAULT_REGION
 }
 
-// Find the corresponding stage configuration from stages.yaml
-const stageConfig = stages.find((stage) => stage.stageName === targetStage);
 
-// validate stage ENV variable provided matches a name in the config
-if (!stageConfig) {
-  throw new Error(`No stage configuration found for ${targetStage}`);
-}
-
-// Namespace stacks by stage
-const stageName = stageConfig.stageName;
-
-// prepare account and region info in the correct data structure
-const stackEnv = {
-  account: stageConfig.account,
-  region: stageConfig.region,
-};
 
 // Infra Stacks
 
 // Create Network Stack
-const networkStack = new NetworkStack(app, `NetworkStack-${stageName}`, {
-  env: stackEnv,
+const networkStack = new NetworkStack(app, `NetworkStack-${stage}`, {
+  env: env,
 });
 
 // Create Storage Stack
-const storageStack = new StorageStack(app, `StorageStack-${stageName}`, {
-  env: stackEnv,
+const storageStack = new StorageStack(app, `StorageStack-${stage}`, {
+  env: env,
 });
 
 // Create AuthStack
-const authStack = new AuthStack(app, `AuthStack-${stageName}`, {
-  env: stackEnv,
+const authStack = new AuthStack(app, `AuthStack-${stage}`, {
+  env: env,
 });
 
 // Create Compute Stack
-const computeStack = new ComputeStack(app, `ComputeStack-${stageName}`, {
-  env: stackEnv,
+const computeStack = new ComputeStack(app, `ComputeStack-${stage}`, {
+  env: env,
 });
 
 // Create EKS Stack
-const eksStack = new EKSStack(app, `EKSStack-${stageName}`, { env: stackEnv });
+const eksStack = new EKSStack(app, `EKSStack-${stage}`, {
+  env: env
+});
 
 /* ----------------------------------------------------------- */
 
@@ -82,9 +65,7 @@ const eksStack = new EKSStack(app, `EKSStack-${stageName}`, { env: stackEnv });
 // Pipeline Stacks
 
 // Create the PipelineStack that will manage deployments to dev/test/prod
-new InfraPipelineStack(app, "InfraPipelineStack", {
-  stages: stages,
-});
+new InfraPipelineStack(app, "InfraPipelineStack");
 
 new FrontendPipelineStack(app, "FrontendPipelineStack");
 

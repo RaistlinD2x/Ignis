@@ -1,0 +1,13 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - cd cdk
+      - npm install -g aws-cdk
+      - npm install
+  post_build:
+    commands:
+      - cdk deploy --context stage=TEST --require-approval never

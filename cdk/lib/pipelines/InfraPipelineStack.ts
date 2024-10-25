@@ -1,134 +1,132 @@
-import * as cdk from "aws-cdk-lib";
-import * as codepipeline from "aws-cdk-lib/aws-codepipeline";
-import * as codepipeline_actions from "aws-cdk-lib/aws-codepipeline-actions";
-import * as codebuild from "aws-cdk-lib/aws-codebuild";
-import * as ssm from "aws-cdk-lib/aws-ssm";
-import { Role, ServicePrincipal, PolicyStatement } from "aws-cdk-lib/aws-iam";
-
-import * as path from 'path'
-
-interface InfraPipelineProps extends cdk.StackProps {
-  stages: { stageName: string; account: string; region: string }[];
-}
+import * as cdk from 'aws-cdk-lib';
+import * as codepipeline from 'aws-cdk-lib/aws-codepipeline';
+import * as codepipeline_actions from 'aws-cdk-lib/aws-codepipeline-actions';
+import * as codebuild from 'aws-cdk-lib/aws-codebuild';
+import { Role, ServicePrincipal, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 
 export class InfraPipelineStack extends cdk.Stack {
-  constructor(scope: cdk.App, id: string, props: InfraPipelineProps) {
+  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // Get the account and region dynamically
-    const accountId = this.account;
-    const region = this.region;
+    const sourceOutput = new codepipeline.Artifact();
+    const buildOutput = new codepipeline.Artifact();
+    const deployOutput = new codepipeline.Artifact();
 
-    // Define the pipeline IAM role
+    // Retrieve GitHub repository name and owner from SSM
+    const githubRepo = StringParameter.valueForStringParameter(
+      this,
+      "/github/repo-name"
+    );
+    const githubOwner = StringParameter.valueForStringParameter(
+      this,
+      "/github/repo-owner"
+    );
+
+    // Retrieve GitHub OAuth token from Secrets Manager
+    const githubOauthToken = cdk.SecretValue.secretsManager("github-oauth-token");
+
+    // Define the pipeline IAM role for SSM access
     const infraPipelineSSMRole = new Role(this, "InfraPipelineSSMRole", {
       assumedBy: new ServicePrincipal("codepipeline.amazonaws.com"),
-      description:
-        "Role with permissions to access SSM parameters for the Infra CodePipeline",
-      roleName: "InfraPipelineSSMRole"
+      description: "Role with permissions to access SSM parameters and GitHub OAuth token for Infra CodePipeline",
+      roleName: "InfraPipelineSSMRole",
     });
 
     // Define the SSM policy inline with dynamic account and region values
     const ssmPolicy = new PolicyStatement({
-      effect: cdk.aws_iam.Effect.ALLOW,
       actions: ["ssm:GetParameter", "ssm:GetParameters"],
       resources: [
-        `arn:aws:ssm:${region}:${accountId}:parameter/github/repo-name`,
-        `arn:aws:ssm:${region}:${accountId}:parameter/github/repo-owner`
-      ]
+        `arn:aws:ssm:${this.region}:${this.account}:parameter/github/repo-name`,
+        `arn:aws:ssm:${this.region}:${this.account}:parameter/github/repo-owner`,
+      ],
     });
 
-    // Attach the policy to the role
+    // Allow access to Secrets Manager for GitHub OAuth token
+    const secretsPolicy = new PolicyStatement({
+      actions: ["secretsmanager:GetSecretValue"],
+      resources: [
+        `arn:aws:secretsmanager:${this.region}:${this.account}:secret:github-oauth-token-*`,
+      ],
+    });
+
+    // Attach the policies to the role
     infraPipelineSSMRole.addToPolicy(ssmPolicy);
+    infraPipelineSSMRole.addToPolicy(secretsPolicy);
 
-    // Define the CodePipeline
-    const pipeline = new codepipeline.Pipeline(this, "InfraPipeline", {
-      pipelineName: "InfraPipeline",
-      role: infraPipelineSSMRole,
-    });
-
-    const sourceOutput = new codepipeline.Artifact();
-    const buildOutput = new codepipeline.Artifact();
-
-    // Retrieve GitHub credentials from SSM parameters (instead of dotenv)
-    const githubOwner = ssm.StringParameter.valueForStringParameter(
-      this,
-      "/github/repo-owner"
-    );
-    const githubRepo = ssm.StringParameter.valueForStringParameter(
-      this,
-      "/github/repo-name"
-    );
-    const githubOauthToken =
-      cdk.SecretValue.secretsManager("github-oauth-token");
-
-    // Source Stage
-    pipeline.addStage({
-      stageName: "Source",
-      actions: [
-        new codepipeline_actions.GitHubSourceAction({
-          actionName: "GitHub_Source",
-          owner: githubOwner,
-          repo: githubRepo,
-          branch: "main",
-          oauthToken: githubOauthToken,
-          output: sourceOutput,
-        }),
-      ],
-    });
-
-    // Build Stage
-    pipeline.addStage({
-      stageName: "Build",
-      actions: [
-        new codepipeline_actions.CodeBuildAction({
-          actionName: "Build",
-          project: new codebuild.PipelineProject(this, "MyBuildProject", {
-            buildSpec: codebuild.BuildSpec.fromSourceFilename('cdk/buildspecs/infra/buildspec-infra-cdk-build.yaml'),
-            environment: {
-              buildImage: codebuild.LinuxBuildImage.STANDARD_7_0, // Add the Linux image
-            }
-          }),
-          input: sourceOutput,
-          outputs: [buildOutput],
-        }),
-      ],
-    });
-
-    // Loop through each stage (dev, test, prod) and add a deployment stage for each
-    props.stages.forEach((stage, index) => {
-      const deployStageName = `DeployTo${stage.stageName.charAt(0).toUpperCase() + stage.stageName.slice(1)}`;
-
-      // Deploy to current environment
-      pipeline.addStage({
-        stageName: deployStageName,
-        actions: [
-          new codepipeline_actions.CodeBuildAction({
-            actionName: `Deploy_${stage.stageName}`,
-            project: new codebuild.PipelineProject(this, `DeployProject_${stage.stageName}`, {
-              buildSpec: codebuild.BuildSpec.fromSourceFilename('cdk/buildspecs/infra/buildspec-infra-cdk-build.yaml'),
-              environmentVariables: {
-                STAGE_NAME: { value: stage.stageName },  // Pass the environment name
-              },
-              environment: {
-                buildImage: codebuild.LinuxBuildImage.STANDARD_7_0, // Add the Linux image
-              }
-            }),
-            input: buildOutput,
-          }),
-        ],
-      });
-
-      // Add a manual approval step between environments
-      if (index < props.stages.length - 1) {
-        pipeline.addStage({
-          stageName: `ApprovalBefore${props.stages[index + 1].stageName}`,
+    // Define CodePipeline
+    new codepipeline.Pipeline(this, 'InfraPipeline', {
+      pipelineName: 'InfraPipeline',
+      stages: [
+        // Source Stage
+        {
+          stageName: 'Source',
           actions: [
-            new codepipeline_actions.ManualApprovalAction({
-              actionName: `ManualApproval_${stage.stageName}`,
+            new codepipeline_actions.GitHubSourceAction({
+              actionName: 'GitHub_Source',
+              owner: githubOwner,
+              repo: githubRepo,
+              branch: 'main',
+              oauthToken: githubOauthToken,
+              output: sourceOutput,
             }),
           ],
-        });
-      }
+        },
+
+        // Dev Build Stage
+        {
+          stageName: 'Dev_Deploy',
+          actions: [
+            new codepipeline_actions.CodeBuildAction({
+              actionName: 'Dev_Build',
+              project: this.createCodeBuildProject('./buildspecs/infra/buildspec-infra-cdk-dev.yaml'),
+              input: sourceOutput,
+              outputs: [buildOutput],
+            }),
+          ],
+        },
+
+        // Test Stage with Manual Approval and Deploy
+        {
+          stageName: 'Test_Deploy',
+          actions: [
+            new codepipeline_actions.ManualApprovalAction({
+              actionName: 'Approve_Test_Deploy',
+            }),
+            new codepipeline_actions.CodeBuildAction({
+              actionName: 'Test_Deploy',
+              project: this.createCodeBuildProject('./buildspecs/infra/buildspec-infra-cdk-test.yaml'),
+              input: buildOutput,
+              outputs: [deployOutput],
+            }),
+          ],
+        },
+
+        // Prod Stage with Manual Approval and Deploy
+        {
+          stageName: 'Prod_Deploy',
+          actions: [
+            new codepipeline_actions.ManualApprovalAction({
+              actionName: 'Approve_Prod_Deploy',
+            }),
+            new codepipeline_actions.CodeBuildAction({
+              actionName: 'Prod_Deploy',
+              project: this.createCodeBuildProject('./buildspecs/infra/buildspec-infra-cdk-prod.yaml'),
+              input: deployOutput,
+            }),
+          ],
+        },
+      ],
+    });
+  }
+
+  // Helper function to create CodeBuild project with a specific buildspec file
+  private createCodeBuildProject(buildSpecFile: string): codebuild.PipelineProject {
+    return new codebuild.PipelineProject(this, `PipelineProject_${buildSpecFile}`, {
+      environment: {
+        buildImage: codebuild.LinuxBuildImage.STANDARD_7_0, // Node.js 18 support
+      },
+      buildSpec: codebuild.BuildSpec.fromSourceFilename(buildSpecFile),
     });
   }
 }
