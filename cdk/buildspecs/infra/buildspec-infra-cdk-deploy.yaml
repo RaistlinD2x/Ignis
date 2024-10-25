@@ -10,4 +10,4 @@ phases:
       - cdk synth
   post_build:
     commands:
-      - cdk deploy AuthStack --context stage=$STAGE_NAME --require-approval never
+      - cdk deploy --context stage=$STAGE_NAME --require-approval never
