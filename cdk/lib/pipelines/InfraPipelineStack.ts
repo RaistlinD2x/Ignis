@@ -83,7 +83,7 @@ export class InfraPipelineStack extends cdk.Stack {
         new codepipeline_actions.CodeBuildAction({
           actionName: "Build",
           project: new codebuild.PipelineProject(this, "MyBuildProject", {
-            buildSpec: codebuild.BuildSpec.fromSourceFilename('cdk/buildspecs/infra/buildspec-infra-cdk-deploy.yaml'),
+            buildSpec: codebuild.BuildSpec.fromSourceFilename('cdk/buildspecs/infra/buildspec-infra-cdk-build.yaml'),
             environment: {
               buildImage: codebuild.LinuxBuildImage.STANDARD_7_0, // Add the Linux image
             }
@@ -105,7 +105,7 @@ export class InfraPipelineStack extends cdk.Stack {
           new codepipeline_actions.CodeBuildAction({
             actionName: `Deploy_${stage.stageName}`,
             project: new codebuild.PipelineProject(this, `DeployProject_${stage.stageName}`, {
-              buildSpec: codebuild.BuildSpec.fromSourceFilename('buildspec.yml'),
+              buildSpec: codebuild.BuildSpec.fromSourceFilename('cdk/buildspecs/infra/buildspec-infra-cdk-build.yaml'),
               environmentVariables: {
                 STAGE_NAME: { value: stage.stageName },  // Pass the environment name
               },

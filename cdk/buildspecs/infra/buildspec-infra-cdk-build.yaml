@@ -1,3 +1,4 @@
+
 version: 0.2
 
 phases:
@@ -8,6 +9,9 @@ phases:
       - cd cdk
       - npm install -g aws-cdk
       - npm install
-  post_build:
+  build:
     commands:
-      - cdk deploy --context stage=$STAGE_NAME --require-approval never
+      - cdk synth --context stage=$STAGE_NAME
+artifacts:
+  files:
+    - '**/*'  # Ensures the synthesized output is passed to the next phase
