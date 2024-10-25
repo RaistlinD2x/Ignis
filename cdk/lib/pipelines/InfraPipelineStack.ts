@@ -19,9 +19,6 @@ export class InfraPipelineStack extends cdk.Stack {
     const accountId = this.account;
     const region = this.region;
 
-    // get base path for buildspecs
-    // const buildspecBasePath = path.resolve(__dirname, '../..', 'buildspecs');
-
     // Define the pipeline IAM role
     const infraPipelineSSMRole = new Role(this, "InfraPipelineSSMRole", {
       assumedBy: new ServicePrincipal("codepipeline.amazonaws.com"),
@@ -94,28 +91,29 @@ export class InfraPipelineStack extends cdk.Stack {
       ],
     });
 
-    console.log("props.stages: ", props.stages);
-
-    // Loop through stages and dynamically add deploy stages
+    // Loop through each stage (dev, test, prod) and add a deployment stage for each
     props.stages.forEach((stage, index) => {
-      const deployStageName = `DeployTo${stage.stageName.charAt(0).toUpperCase() + stage.stageName.slice(1)
-        }`;
+      const deployStageName = `DeployTo${stage.stageName.charAt(0).toUpperCase() + stage.stageName.slice(1)}`;
 
+      // Deploy to current environment
       pipeline.addStage({
         stageName: deployStageName,
         actions: [
-          new codepipeline_actions.CloudFormationCreateUpdateStackAction({
+          new codepipeline_actions.CodeBuildAction({
             actionName: `Deploy_${stage.stageName}`,
-            stackName: `MyApp${stage.stageName}Stack`,
-            templatePath: buildOutput.atPath("MyApp.template.json"),
-            adminPermissions: true,
+            project: new codebuild.PipelineProject(this, `DeployProject_${stage.stageName}`, {
+              buildSpec: codebuild.BuildSpec.fromSourceFilename('buildspec.yml'),
+              environmentVariables: {
+                STAGE_NAME: { value: stage.stageName },  // Pass the environment name
+              },
+            }),
+            input: buildOutput,
           }),
         ],
       });
 
-      // Optionally add a manual approval action after certain stages
+      // Add a manual approval step between environments
       if (index < props.stages.length - 1) {
-        // Only add approval if there are more stages to deploy to
         pipeline.addStage({
           stageName: `ApprovalBefore${props.stages[index + 1].stageName}`,
           actions: [

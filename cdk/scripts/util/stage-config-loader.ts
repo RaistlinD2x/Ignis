@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import * as yaml from 'js-yaml';
-import * as path from 'path';
 
 interface StageConfig {
   stageName: string;
@@ -8,11 +7,13 @@ interface StageConfig {
   region: string;
 }
 
-function loadEnvironmentConfig(): StageConfig[] {
-  const configPath = path.join(__dirname, 'stages.yaml'); // Adjust path as needed
-  const fileContents = fs.readFileSync(configPath, 'utf8');
-  return yaml.load(fileContents) as StageConfig[];
-}
+// Load the YAML file
+const stagesYaml = fs.readFileSync('./scripts/util/stages.yaml', 'utf8');
 
-const stages = loadEnvironmentConfig();
+// Parse the YAML file
+const config = yaml.load(stagesYaml) as { stages: StageConfig[] };
+
+// Export the stages array (by accessing the stages property)
+const stages = config.stages;
+
 export { stages };

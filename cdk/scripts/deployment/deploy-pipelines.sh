@@ -20,7 +20,7 @@ cd ..
 
 echo $REQUIRE_APPROVAL
 
-cdk deploy InfraPipelineStack --profile "$PROFILE" --region "$CDK_REGION" --require-approval "$REQUIRE_APPROVAL"
+cdk deploy InfraPipelineStack --profile "$PROFILE" --region "$CDK_REGION" --require-approval "$REQUIRE_APPROVAL" --context stage=DEV
 if [ $? -ne 0 ]; then
   echo "Failed to deploy PipelineStack"
   exit 1

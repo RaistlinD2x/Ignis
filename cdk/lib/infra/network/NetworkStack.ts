@@ -4,7 +4,7 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 export class NetworkStack extends cdk.Stack {
   public readonly vpc: ec2.Vpc;
 
-  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
+  constructor(scope: cdk.App, id: string, props: cdk.StackProps) {
     super(scope, id, props);
 
     // Create a VPC with public and private subnets across multiple Availability Zones

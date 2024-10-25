@@ -55,11 +55,11 @@ fi
 # fi
 
 # Step 3: Deploy pipelines
-echo "Deploying pipelines..."
-sh ./deployment/deploy-pipelines.sh "$PROFILE" "$CDK_REGION" "$ACCOUNT_ID" "$REQUIRE_APPROVAL"
-if [ $? -ne 0 ]; then
-  echo "Failed to deploy pipelines. Exiting..."
-  exit 1
-fi
+# echo "Deploying pipelines..."
+# sh ./deployment/deploy-pipelines.sh "$PROFILE" "$CDK_REGION" "$ACCOUNT_ID" "$REQUIRE_APPROVAL"
+# if [ $? -ne 0 ]; then
+#   echo "Failed to deploy pipelines. Exiting..."
+#   exit 1
+# fi
 
 echo "Bootstrap process completed successfully!"

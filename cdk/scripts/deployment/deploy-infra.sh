@@ -15,7 +15,7 @@ REQUIRE_APPROVAL="$4"
 cd ..
 
 # Deploy all stacks at once
-cdk deploy AuthStack --profile "$PROFILE" --region "$CDK_REGION" $REQUIRE_APPROVAL
+cdk deploy --all --profile "$PROFILE" --region "$CDK_REGION" --require-approval "$REQUIRE_APPROVAL"
 if [ $? -ne 0 ]; then
   echo "Failed to deploy infrastructure stacks"
   exit 1
