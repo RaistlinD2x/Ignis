@@ -10,4 +10,4 @@ phases:
       - npm install
   post_build:
     commands:
-      - cdk deploy --context stage=PROD --require-approval never
+      - cdk deploy --all --context stage=PROD --require-approval never
