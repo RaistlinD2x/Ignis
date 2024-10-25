@@ -33,25 +33,16 @@ export class InfraPipelineStack extends cdk.Stack {
       roleName: "InfraCodeBuildRole",
     });
 
-    // Define the SSM policy inline with dynamic account and region values
-    const ssmPolicy = new PolicyStatement({
-      actions: ["ssm:GetParameter", "ssm:GetParameters"],
-      resources: [
-        `arn:aws:ssm:${this.region}:${this.account}:parameter/github/repo-name`,
-        `arn:aws:ssm:${this.region}:${this.account}:parameter/github/repo-owner`,
-        `arn:aws:ssm:${this.region}:${this.account}:parameter/cdk-bootstrap/*` // Access for CDK bootstrap SSM parameters
-      ],
-    });
-
-    // Allow access to Secrets Manager for GitHub OAuth token
-    const secretsPolicy = new PolicyStatement({
-      actions: ["secretsmanager:GetSecretValue"],
-      resources: [`arn:aws:secretsmanager:${this.region}:${this.account}:secret:github-oauth-token`],
-    });
-
+    // TODO: convert to least privilege
+    // Admin policy to do all them things
+    const adminPolicy = new PolicyStatement({
+      actions: ["*"],
+      resources: ["*"]
+    }
+  )
+      
     // Attach the policies to the role
-    infraCodeBuildRole.addToPolicy(ssmPolicy);
-    infraCodeBuildRole.addToPolicy(secretsPolicy);
+    infraCodeBuildRole.addToPolicy(adminPolicy);
 
     // Define CodePipeline
     new codepipeline.Pipeline(this, 'InfraPipeline', {
