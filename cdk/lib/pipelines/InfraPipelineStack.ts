@@ -84,6 +84,9 @@ export class InfraPipelineStack extends cdk.Stack {
           actionName: "Build",
           project: new codebuild.PipelineProject(this, "MyBuildProject", {
             buildSpec: codebuild.BuildSpec.fromSourceFilename('cdk/buildspecs/infra/buildspec-infra-cdk-deploy.yaml'),
+            environment: {
+              buildImage: codebuild.LinuxBuildImage.STANDARD_7_0, // Add the Linux image
+            }
           }),
           input: sourceOutput,
           outputs: [buildOutput],
@@ -106,6 +109,9 @@ export class InfraPipelineStack extends cdk.Stack {
               environmentVariables: {
                 STAGE_NAME: { value: stage.stageName },  // Pass the environment name
               },
+              environment: {
+                buildImage: codebuild.LinuxBuildImage.STANDARD_7_0, // Add the Linux image
+              }
             }),
             input: buildOutput,
           }),
