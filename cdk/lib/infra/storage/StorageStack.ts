@@ -18,11 +18,5 @@ export class StorageStack extends cdk.Stack {
       removalPolicy: RemovalPolicy.DESTROY, // Destroy bucket when the stack is deleted
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL, // Secure the bucket
     });
-
-    // Optionally, export bucket name as output (for reference in pipelines)
-    // new cdk.CfnOutput(this, 'HelmBucketName', {
-    //   value: this.helmBucket.bucketName,
-    //   description: 'Helm charts bucket name',
-    // });
   }
 }
