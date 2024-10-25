@@ -39,6 +39,7 @@ export class InfraPipelineStack extends cdk.Stack {
       resources: [
         `arn:aws:ssm:${this.region}:${this.account}:parameter/github/repo-name`,
         `arn:aws:ssm:${this.region}:${this.account}:parameter/github/repo-owner`,
+        `arn:aws:ssm:${this.region}:${this.account}:parameter/cdk-bootstrap/*`
       ],
     });
 
