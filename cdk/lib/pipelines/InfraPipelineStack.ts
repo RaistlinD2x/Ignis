@@ -27,10 +27,10 @@ export class InfraPipelineStack extends cdk.Stack {
     const githubOauthToken = cdk.SecretValue.secretsManager("github-oauth-token");
 
     // Define the pipeline IAM role for SSM access
-    const infraPipelineSSMRole = new Role(this, "InfraPipelineSSMRole", {
-      assumedBy: new ServicePrincipal("codepipeline.amazonaws.com"),
-      description: "Role with permissions to access SSM parameters and GitHub OAuth token for Infra CodePipeline",
-      roleName: "InfraPipelineSSMRole",
+    const infraCodeBuildRole = new Role(this, "InfraCodeBuildRole", {
+      assumedBy: new ServicePrincipal("codebuild.amazonaws.com"),
+      description: "Role with permissions to access SSM parameters and GitHub OAuth token for Infra CodeBuild",
+      roleName: "InfraCodeBuildRole",
     });
 
     // Define the SSM policy inline with dynamic account and region values
@@ -50,13 +50,12 @@ export class InfraPipelineStack extends cdk.Stack {
     });
 
     // Attach the policies to the role
-    infraPipelineSSMRole.addToPolicy(ssmPolicy);
-    infraPipelineSSMRole.addToPolicy(secretsPolicy);
+    infraCodeBuildRole.addToPolicy(ssmPolicy);
+    infraCodeBuildRole.addToPolicy(secretsPolicy);
 
     // Define CodePipeline
     new codepipeline.Pipeline(this, 'InfraPipeline', {
       pipelineName: 'InfraPipeline',
-      role: infraPipelineSSMRole,
       stages: [
         // Source Stage
         {
@@ -79,7 +78,7 @@ export class InfraPipelineStack extends cdk.Stack {
           actions: [
             new codepipeline_actions.CodeBuildAction({
               actionName: 'Dev_Build',
-              project: this.createCodeBuildProject('./cdk/buildspecs/infra/buildspec-infra-cdk-dev-deploy.yaml'),
+              project: this.createCodeBuildProject('./cdk/buildspecs/infra/buildspec-infra-cdk-dev-deploy.yaml', infraCodeBuildRole),
               input: sourceOutput,
               outputs: [buildOutput],
             }),
@@ -95,7 +94,7 @@ export class InfraPipelineStack extends cdk.Stack {
             }),
             new codepipeline_actions.CodeBuildAction({
               actionName: 'Test_Deploy',
-              project: this.createCodeBuildProject('./cdk/buildspecs/infra/buildspec-infra-cdk-test-deploy.yaml'),
+              project: this.createCodeBuildProject('./cdk/buildspecs/infra/buildspec-infra-cdk-test-deploy.yaml', infraCodeBuildRole),
               input: buildOutput,
               outputs: [deployOutput],
             }),
@@ -111,7 +110,7 @@ export class InfraPipelineStack extends cdk.Stack {
             }),
             new codepipeline_actions.CodeBuildAction({
               actionName: 'Prod_Deploy',
-              project: this.createCodeBuildProject('./cdk/buildspecs/infra/buildspec-infra-cdk-prod-deploy.yaml'),
+              project: this.createCodeBuildProject('./cdk/buildspecs/infra/buildspec-infra-cdk-prod-deploy.yaml', infraCodeBuildRole),
               input: deployOutput,
             }),
           ],
@@ -121,8 +120,9 @@ export class InfraPipelineStack extends cdk.Stack {
   }
 
   // Helper function to create CodeBuild project with a specific buildspec file
-  private createCodeBuildProject(buildSpecFile: string): codebuild.PipelineProject {
+  private createCodeBuildProject(buildSpecFile: string, role: Role): codebuild.PipelineProject {
     return new codebuild.PipelineProject(this, `PipelineProject_${buildSpecFile}`, {
+      role,
       environment: {
         buildImage: codebuild.LinuxBuildImage.STANDARD_7_0, // Node.js 18 support
       },
