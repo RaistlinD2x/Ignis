@@ -79,7 +79,7 @@ export class InfraPipelineStack extends cdk.Stack {
           actions: [
             new codepipeline_actions.CodeBuildAction({
               actionName: 'Dev_Build',
-              project: this.createCodeBuildProject('./cdk/buildspecs/infra/buildspec-infra-cdk-dev.yaml'),
+              project: this.createCodeBuildProject('./cdk/buildspecs/infra/buildspec-infra-cdk-dev-deploy.yaml'),
               input: sourceOutput,
               outputs: [buildOutput],
             }),
@@ -95,7 +95,7 @@ export class InfraPipelineStack extends cdk.Stack {
             }),
             new codepipeline_actions.CodeBuildAction({
               actionName: 'Test_Deploy',
-              project: this.createCodeBuildProject('./cdk/buildspecs/infra/buildspec-infra-cdk-test.yaml'),
+              project: this.createCodeBuildProject('./cdk/buildspecs/infra/buildspec-infra-cdk-test-deploy.yaml'),
               input: buildOutput,
               outputs: [deployOutput],
             }),
@@ -111,7 +111,7 @@ export class InfraPipelineStack extends cdk.Stack {
             }),
             new codepipeline_actions.CodeBuildAction({
               actionName: 'Prod_Deploy',
-              project: this.createCodeBuildProject('./cdk/buildspecs/infra/buildspec-infra-cdk-prod.yaml'),
+              project: this.createCodeBuildProject('./cdk/buildspecs/infra/buildspec-infra-cdk-prod-deploy.yaml'),
               input: deployOutput,
             }),
           ],
