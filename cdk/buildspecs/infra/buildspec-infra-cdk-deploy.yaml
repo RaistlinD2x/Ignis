@@ -5,6 +5,7 @@ phases:
     runtime-versions:
         nodejs: 18
     commands:
+      - cd cdk
       - npm install -g aws-cdk
       - npm install
   build:
