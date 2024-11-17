@@ -1,7 +1,0 @@
-image:
-  repository: "<ecr-repository-url>"  # This will be set dynamically from the CDK
-  tag: "latest"
-
-service:
-  type: LoadBalancer
-  port: 80

@@ -1,0 +1,36 @@
+{
+    "TrainingJobName": "model1-training-job",
+    "AlgorithmSpecification": {
+        "TrainingImage": "763104351884.dkr.ecr.us-west-2.amazonaws.com/tensorflow-training:2.8.0-cpu-py39",
+        "TrainingInputMode": "File"
+    },
+    "RoleArn": "arn:aws:iam::123456789012:role/SageMakerRole",
+    "InputDataConfig": [
+        {
+            "ChannelName": "train",
+            "DataSource": {
+                "S3DataSource": {
+                    "S3DataType": "S3Prefix",
+                    "S3Uri": "s3://your-bucket/model1/train/",
+                    "S3DataDistributionType": "FullyReplicated"
+                }
+            },
+            "ContentType": "text/csv"
+        }
+    ],
+    "OutputDataConfig": {
+        "S3OutputPath": "s3://your-bucket/model1/output/"
+    },
+    "ResourceConfig": {
+        "InstanceType": "ml.m5.xlarge",
+        "InstanceCount": 1,
+        "VolumeSizeInGB": 10
+    },
+    "StoppingCondition": {
+        "MaxRuntimeInSeconds": 3600
+    },
+    "HyperParameters": {
+        "batch_size": "32",
+        "learning_rate": "0.001"
+    }
+}
