@@ -1,0 +1,109 @@
+{
+    "project": {
+        "name": "MyIgnisProject",
+        "description": "A customizable project deployment framework.",
+        "environment": "dev",
+        "cloud_provider": "aws",
+        "_comments": {
+            "name": "Name of the project.",
+            "description": "Description of the project's purpose or goals.",
+            "environment": "Environment for deployment. Supports 'dev', 'test', and 'prod'.",
+            "cloud_provider": "Cloud Service Provider (CSP). Supported options: 'aws', 'azure', 'gcp'."
+        }
+    },
+    "auth": {
+        "enabled": true,
+        "provider": "cognito",
+        "api_gateway": true,
+        "outputs": {
+            "use_ssm": true,
+            "use_secrets_manager": false
+        },
+        "_comments": {
+            "enabled": "Enable or disable the auth module. If false, no auth is required for frontend or backend endpoints.",
+            "provider": "Defines the authentication provider. Currently supports 'cognito' but should allow for easy replacement with providers like 'okta' or 'azure-ad'.",
+            "api_gateway": "If true, API Gateway will use the Cognito Authorizer for abstracting authentication on backend endpoints.",
+            "outputs": "Determines where authentication-related outputs are stored. Options: 'use_ssm' (AWS Systems Manager Parameter Store) or 'use_secrets_manager' (AWS Secrets Manager)."
+        }
+    },
+    "frontend": {
+        "enabled": true,
+        "web_framework": "flutter",
+        "mobile_framework": "flutter",
+        "config": {
+            "web_enabled": true,
+            "mobile_enabled": true,
+            "cognito_hosted_ui": true,
+            "api_base_url": "/auth/apiGatewayUrl"
+        },
+        "_comments": {
+            "enabled": "Enable or disable the frontend module.",
+            "web_framework": "Framework to use for web development. Options: 'react', 'angular', etc.",
+            "mobile_framework": "Framework to use for mobile development. Options: 'flutter', 'react-native', etc.",
+            "config": {
+                "web_enabled": "Toggle deployment of web applications.",
+                "mobile_enabled": "Toggle deployment of mobile applications.",
+                "cognito_hosted_ui": "If true, uses Cognito Hosted UI for user authentication.",
+                "api_base_url": "Defines the base URL for the API Gateway. Defaults to a reference in SSM."
+            }
+        }
+    },
+    "backend": {
+        "enabled": true,
+        "architecture": "serverless",
+        "services": ["auth", "user", "data-api"],
+        "config": {
+            "auth_integration": "/auth/cognitoAuthorizerArn",
+            "api_gateway": "/auth/apiGatewayUrl"
+        },
+        "_comments": {
+            "enabled": "Enable or disable backend services.",
+            "architecture": "Backend architecture type. Options: 'serverless' (Lambda) or 'microservices' (e.g., EKS).",
+            "services": "List of backend services to deploy. Common examples include 'auth', 'user', and 'data-api'.",
+            "config": {
+                "auth_integration": "Reference to the Cognito Authorizer ARN stored in SSM.",
+                "api_gateway": "Reference to the API Gateway URL stored in SSM."
+            }
+        }
+    },
+    "aiml": {
+        "enabled": true,
+        "components": {
+            "data-processing": true,
+            "model-training": true,
+            "model-serving": true
+        },
+        "config": {
+            "sagemaker": true,
+            "data_catalog": true
+        },
+        "_comments": {
+            "enabled": "Enable or disable AIML components.",
+            "components": {
+                "data-processing": "Enable data preprocessing workflows.",
+                "model-training": "Enable model training workflows.",
+                "model-serving": "Enable model serving workflows."
+            },
+            "config": {
+                "sagemaker": "If true, uses AWS SageMaker for training and deployment.",
+                "data_catalog": "Enable a shared data catalog for managing datasets."
+            }
+        }
+    },
+    "infra": {
+        "enabled": true,
+        "modules": ["core-infra", "pipelines"],
+        "config": {
+            "use_terraform": false,
+            "region": "us-east-1"
+        },
+        "_comments": {
+            "enabled": "Enable or disable infrastructure setup.",
+            "modules": "List of infrastructure modules to deploy. Examples: 'core-infra', 'pipelines', 'auth'.",
+            "config": {
+                "use_terraform": "If true, uses Terraform for infrastructure provisioning. If false, uses CDK.",
+                "region": "Defines the AWS region for deployment."
+            }
+        }
+    }
+}
